@@ -11,7 +11,7 @@ jobs:
       contents: read
       packages: write
     env:
-      IMAGE_NAME: ghcr.io/mathan1079/receevi/receevi
+      IMAGE_NAME: ghcr.io/mathan1079/receevi
     steps:
       - name: Checkout
         uses: actions/checkout@v3
