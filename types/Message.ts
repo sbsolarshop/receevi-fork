@@ -1,31 +1,40 @@
-import { MessageTemplate } from "./message-template"
+import { MessageTemplate } from "./message-template";
 
 export type MessageJson = {
-    from?: string,
-    to?: string,
-    id: string,
-    timestamp: string,
-    type: string,
-}
+  from?: string;
+  to?: string;
+  id: string;
+  timestamp: string;
+  type: string;
+};
 
 export type TextMessageBody = {
-    body: string,
-}
+  body: string;
+};
 
 export type TextMessage = MessageJson & {
-    text: TextMessageBody
-}
+  text: TextMessageBody;
+};
+
+export type ReactionMessageBody = {
+  emoji: string;
+  message_id: string;
+};
+
+export type ReactionMessage = MessageJson & {
+  reaction: ReactionMessageBody;
+};
 
 export type ImageMessageBody = {
-    mime_type: string,
-    sha256: string,
-    id: string,
-}
+  mime_type: string;
+  sha256: string;
+  id: string;
+};
 
 export type TemplateMessage = MessageJson & {
-    template: MessageTemplate
-}
+  template: MessageTemplate;
+};
 
 export type ImageMessage = MessageJson & {
-    image: ImageMessageBody,
-}
+  image: ImageMessageBody;
+};
