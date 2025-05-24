@@ -1,4 +1,3 @@
-import { redirectIfUnauthorized } from "@/lib/supabase/supabase-redirect";
 import { ReactNode } from "react";
 import PanelClient from './layoutClient';
 
