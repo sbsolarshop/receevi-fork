@@ -2,7 +2,7 @@ name: Create and push a production release for receevi
 
 on:
   push:
-    branches: ["main"]
+    branches: ["modified"]
 
 jobs:
   docker:
@@ -36,15 +36,3 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
-      - name: Deploy on server
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            docker pull ghcr.io/sbsolarshop/receevi:latest
-            cd /root/apps/receevi
-            make remove
-            sleep 20
-            make deploy
