@@ -10,6 +10,7 @@ declare global {
             WEBHOOK_VERIFY_TOKEN: string;
             WHATSAPP_API_PHONE_NUMBER_ID: string;
             WHATSAPP_BUSINESS_ACCOUNT_ID: string;
+            MEDIA_RETENTION_DAYS?: string;
         }
     }
 }

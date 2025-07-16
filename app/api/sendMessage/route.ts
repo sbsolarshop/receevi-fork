@@ -26,7 +26,6 @@ type Message = {
   document?: Media;
   video?: Media;
   image?: Media;
-  sticker?: Media;
   text?: {
     body: string;
   };
@@ -297,13 +296,59 @@ export async function POST(request: NextRequest) {
   const reqFormDataTemplate = reqFormData.get("template")?.toString();
   const template: TemplateRequest | null | undefined =
     reqFormDataTemplate && JSON.parse(reqFormDataTemplate);
-  const to = reqFormData.get("to")?.toString();
-  if (!to) {
+  const toRaw = reqFormData.get("to")?.toString();
+  if (!toRaw) {
     return new NextResponse(null, { status: 400 });
+  }
+  // Ensure mobile number is in correct format: 12 digits, starts with '91', and not double '91'
+  let to = toRaw;
+  if (to.length === 10 && /^\d{10}$/.test(to)) {
+    // 10 digit number, add '91'
+    to = "91" + to;
+  } else if (to.length === 12 && to.startsWith("91") && /^91\d{10}$/.test(to)) {
+    // already correct
+  } else {
+    return new NextResponse("Invalid mobile number format", { status: 400 });
   }
   if (!message && !file && !template) {
     return new NextResponse(null, { status: 400 });
   }
+
+  // Check if contact exists, if not, create it
+  const contactFactory = (
+    await import("@/lib/repositories/contacts/ContactServerFactory")
+  ).default;
+  const contactRepo = contactFactory.getInstance();
+  let contact = null;
+  try {
+    contact = await contactRepo.getContactById(to);
+  } catch (e) {
+    console.error("Error fetching contact", e);
+  }
+  if (!contact) {
+    // Create a new contact without fetching profile name from WhatsApp API
+    try {
+      const { error: insertError } = await supabase
+        .from(DBTables.Contacts)
+        .insert({
+          wa_id: Number(to),
+          in_chat: true, // set to true so contact appears in chat list
+          unread_count: 0,
+          created_at: new Date(),
+          last_message_at: new Date(),
+          last_message_received_at: new Date(),
+          profile_name: to, // just use wa_id as profile_name
+          tags: null,
+          assigned_to: null,
+        });
+      if (insertError) {
+        console.error("Error creating contact", insertError);
+      }
+    } catch (e) {
+      console.error("Exception creating contact", e);
+    }
+  }
+
   await sendWhatsAppMessage(to, message, fileType, file, template);
   let { error } = await supabase
     .from(DBTables.Contacts)

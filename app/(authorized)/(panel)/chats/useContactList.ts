@@ -37,24 +37,40 @@ export function useContactList(search: string, active: boolean) {
     const noMore = useRef<boolean>(false);
     const pageSize = 100
     const getContacts = useCallback(async (active: boolean, before: string | undefined = undefined) => {
+        console.log(`[getContacts] Fetching ${active ? 'active' : 'inactive'} contacts${before ? ' before ' + before : ''} (pageSize: ${pageSize})`);
+        
         let query = supabase
             .from(DBTables.Contacts)
             .select('*')
             .filter('in_chat', 'eq', true)
             .order('last_message_at', { ascending: false })
             .limit(pageSize)
+        
+        console.log(`[getContacts] Base query constructed with in_chat=true filter and last_message_at descending sort`);
+        
         if (before) {
+            console.log(`[getContacts] Applying pagination filter: last_message_at < ${before}`);
             query = query.filter('last_message_at', 'lt', before)
         }
+        
+        const dayAgo = new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString();
         if (active) {
-            query = query.filter('last_message_received_at', 'gt', new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString())
+            console.log(`[getContacts] Filtering for active contacts (messages after ${dayAgo})`);
+            query = query.filter('last_message_received_at', 'gt', dayAgo)
         } else {
-            query = query.filter('last_message_received_at', 'lte', new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString())
+            console.log(`[getContacts] Filtering for inactive contacts (messages before/on ${dayAgo})`);
+            query = query.filter('last_message_received_at', 'lte', dayAgo)
         }
+        
+        console.log(`[getContacts] Executing query to Supabase`);
         const { data, error } = await query
+        
         if (error) {
+            console.error(`[getContacts] Error fetching contacts:`, error);
             throw error
         }
+        
+        console.log(`[getContacts] Successfully retrieved ${data?.length || 0} contacts`);
         return addTimeSince(data);
     }, [supabase])
     const loadMore = useCallback(async () => {

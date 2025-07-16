@@ -1,26 +1,26 @@
-import 'server-only'
+import "server-only";
 
-import SupabaseUserProvider from '@/components/supabase-user-provider'
-import { createClient } from '@/utils/supabase-server'
-import NextTopLoader from 'nextjs-toploader'
-import './globals.css'
-import SupabaseProvider from '@/components/supabase-provider'
+import SupabaseUserProvider from "@/components/supabase-user-provider";
+import { createClient } from "@/utils/supabase-server";
+import NextTopLoader from "nextjs-toploader";
+import "./globals.css";
+import SupabaseProvider from "@/components/supabase-provider";
 
 // do not cache this layout
-export const revalidate = 0
+export const revalidate = 0;
 
 export const dynamic = "force-dynamic";
 
 export default async function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const supabase = createClient()
+  const supabase = createClient();
 
   const {
     data: { session },
-  } = await supabase.auth.getSession()
+  } = await supabase.auth.getSession();
   return (
     <html lang="en">
       <head>
@@ -30,12 +30,15 @@ export default async function RootLayout({
       </head>
       <body>
         <NextTopLoader color="#000" />
-        <SupabaseProvider supabaseUrl={process.env.SUPABASE_URL} supabaseAnonKey={process.env.SUPABASE_ANON_KEY}>
+        <SupabaseProvider
+          supabaseUrl={process.env.SUPABASE_URL || ""}
+          supabaseAnonKey={process.env.SUPABASE_ANON_KEY || ""}
+        >
           <SupabaseUserProvider user={session?.user}>
             {children}
           </SupabaseUserProvider>
         </SupabaseProvider>
       </body>
     </html>
-  )
+  );
 }
